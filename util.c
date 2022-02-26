@@ -1,5 +1,7 @@
 /* See LICENSE file for copyright and license details. */
+#include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -9,6 +11,7 @@
 #include "util.h"
 
 char *argv0;
+const char* out_path; //file path for the hwmon temperature input file
 
 static void
 verr(const char *fmt, va_list ap)
@@ -143,4 +146,53 @@ pscanf(const char *path, const char *fmt, ...)
 	fclose(fp);
 
 	return (n == EOF) ? -1 : n;
+}
+
+
+//----- functions related to finding the hwmon temperature input file
+
+int dir_contains(char* dir_name, const char* file_name, char* start_path){
+    char* x;
+    sprintf(dir_name, "%s/%s", start_path, (x=strdup(dir_name)));
+    free(x);
+    DIR* c = opendir(dir_name);
+    while(1){
+        struct dirent* entry;
+        const char* name;
+        entry = readdir(c);
+        if(!entry) break;
+        name = entry->d_name;
+        if(strcmp(file_name, name) == 0) return 1;
+    }
+    return 0;
+}
+
+char* concat(char* dir_name, char* file_name){
+    char* result = malloc(strlen(dir_name) + strlen(file_name));
+    strcat(result, dir_name);
+    strcat(result, "/");
+    strcat(result, file_name);
+    return result;
+}
+
+const char* find_input_file(char* start_path){
+    char* input_file = "temp1_input";
+    DIR* d = opendir(start_path);
+    while(1){
+        struct dirent* entry;
+        char* d_name;
+        entry = readdir(d);
+        if(!entry){
+            closedir(d);
+            break; //no more entries in this directory
+        }
+        d_name = entry->d_name;
+        if(strcmp(d_name, ".") != 0 && strcmp(d_name, "..") != 0){
+            if(dir_contains(d_name, input_file, start_path)){
+                out_path = concat(d_name, input_file);
+                break;
+            }
+        }
+    }
+    return out_path;
 }

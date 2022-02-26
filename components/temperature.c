@@ -1,5 +1,10 @@
 /* See LICENSE file for copyright and license details. */
+#include <dirent.h>
+#include <limits.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../util.h"
 
@@ -8,11 +13,10 @@
 	#include <stdint.h>
 
 	const char *
-	temp(const char *file)
+	temp()
 	{
 		uintmax_t temp;
-
-		if (pscanf(file, "%ju", &temp) != 1) {
+		if (pscanf(out_path, "%ju", &temp) != 1) {
 			return NULL;
 		}
 

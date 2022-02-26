@@ -54,6 +54,7 @@ main(int argc, char *argv[])
 	char status[MAXLEN];
 	const char *res;
 
+	find_input_file("/sys/devices/pci0000:00/0000:00:18.3/hwmon");
 	sflag = 0;
 	ARGBEGIN {
 		case '1':
